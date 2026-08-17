@@ -1,0 +1,18 @@
+# ==============================================================================
+# TERRAFORM VARIABLES VALUES TEMPLATE
+# ==============================================================================
+# Copy this file to `terraform.tfvars` and fill in your actual values.
+# IMPORTANT: NEVER commit `terraform.tfvars` to Git!
+
+aws_region      = "ap-southeast-1"
+aws_profile     = "default"
+environment     = "development"
+
+# S3 Configuration
+s3_bucket_name  = "profileapp-pics-southeast1-v2"
+
+# Database Configuration
+db_name         = "profileapp"
+db_username     = "profileadmin"
+db_password     = "your-secure-rds-master-password-here"
+db_instance_class = "db.t3.micro"
