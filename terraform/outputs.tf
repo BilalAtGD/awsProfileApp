@@ -33,3 +33,17 @@ output "db_name" {
   description = "Database Name (DB_NAME)"
   value       = aws_db_instance.postgres.db_name
 }
+
+# ------------------------------------------------------------------------------
+# EC2 Outputs
+# ------------------------------------------------------------------------------
+output "ec2_public_ip" {
+  description = "Public IP Address of the EC2 Backend Server"
+  value       = aws_instance.backend_server.public_ip
+}
+
+output "ec2_public_dns" {
+  description = "Public DNS of the EC2 Backend Server"
+  value       = aws_instance.backend_server.public_dns
+}
+

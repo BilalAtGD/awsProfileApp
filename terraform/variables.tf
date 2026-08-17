@@ -63,3 +63,19 @@ variable "db_instance_class" {
   type        = string
   default     = "db.t3.micro"
 }
+
+# ------------------------------------------------------------------------------
+# EC2 Variables
+# ------------------------------------------------------------------------------
+variable "ec2_instance_type" {
+  description = "AWS EC2 Instance Type for Backend Server"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "frontend_url" {
+  description = "Vercel Frontend URL allowed in S3 CORS"
+  type        = string
+  default     = "*"
+}
+
