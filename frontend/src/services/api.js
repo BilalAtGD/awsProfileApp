@@ -3,9 +3,15 @@ import { useAuthStore } from '../store/authStore';
 
 /**
  * Axios instance configured with base URL and cross-site HTTP-only cookie credentials.
+ * In Production (Vercel), default baseURL is empty string '' so relative paths like /api/auth/google
+ * are proxied cleanly by Vercel to EC2 without double /api/ prefixes or Mixed Content errors.
  */
+const baseURL = import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
+  ? import.meta.env.VITE_API_URL 
+  : (import.meta.env.PROD ? '' : 'http://localhost:5000');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
