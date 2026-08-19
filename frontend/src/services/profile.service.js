@@ -1,6 +1,6 @@
 import api from './api';
 
 export const profileService = {
-  getProfile: () => api.get('/api/profile'),
-  updateProfile: (data) => api.put('/api/profile', data),
+  getProfile: () => api.get('/profile'),
+  updateProfile: (data) => api.put('/profile', data),
 };
