@@ -7,13 +7,13 @@ export const s3Service = {
    * Backend verifies JWT, then generates the URL
    */
   getUploadUrl: async (fileType) => {
-    const res = await api.post('/api/s3/upload-url', { fileType });
+    const res = await api.post('/s3/upload-url', { fileType });
     return res.data.data; // { uploadUrl, key }
   },
 
   /**
    * Step 2: Upload file directly to S3 using the presigned URL
-   * Note: We use plain axios (NOT our api instance) because:
+   * Note: We use plain axios (NOT o instance) because:
    * - The presigned URL already has auth embedded in the URL
    * - Adding our JWT Authorization header would break the S3 request
    */
@@ -27,7 +27,7 @@ export const s3Service = {
    * Get a presigned GET URL to display the user's profile picture
    */
   getViewUrl: async (key) => {
-    const res = await api.post('/api/s3/view-url', { key });
+    const res = await api.post('/s3/view-url', { key });
     return res.data.data.viewUrl;
   },
 };
