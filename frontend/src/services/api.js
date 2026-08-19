@@ -4,8 +4,9 @@ import { useAuthStore } from '../store/authStore';
 /**
  * Axios instance configured with base URL and cross-site HTTP-only cookie credentials.
  */
+console.log(import.meta.env)
 const api = axios.create({
-  baseURL: import.meta.env.BACKEND_URL || 'http://localhost:5000',
+  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
