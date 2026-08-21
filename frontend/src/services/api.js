@@ -4,10 +4,16 @@ import { useAuthStore } from '../store/authStore';
 /**
  * Axios instance configured with base URL and cross-site HTTP-only cookie credentials.
  */
+const getBaseURL = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  if (!backendUrl || backendUrl === '') {
+    return '/api';
+  }
+  return backendUrl.endsWith('/api') ? backendUrl : `${backendUrl}/api`;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL !== undefined 
-    ? import.meta.env.VITE_BACKEND_URL 
-    : 'http://localhost:5000',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },

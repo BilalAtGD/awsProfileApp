@@ -24,7 +24,7 @@ data "aws_ami" "ubuntu" {
 # 2. Security Group for EC2 Backend Server
 resource "aws_security_group" "ec2_sg" {
   name        = "profileapp-ec2-sg"
-  description = "Security Group for ProfileApp EC2 (Docker, Caddy & Web Traffic)"
+  description = "Security Group for ProfileApp EC2 Node.js Backend Server"
   vpc_id      = aws_vpc.main.id
 
   # HTTP (Web traffic / Caddy Let's Encrypt challenge)
