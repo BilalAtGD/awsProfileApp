@@ -1,0 +1,56 @@
+services:
+  # ─── 1. Backend Service (Node.js / Express API) ───────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: profileapp-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network
+
+  # ─── 2. Frontend Service (React 19 / Nginx Static Server) ────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_BACKEND_URL=
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-${GOOGLE_CLIENT_ID}}
+    container_name: profileapp-frontend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # ─── 3. Caddy Reverse Proxy & Automatic SSL ───────────────────────
+  caddy:
+    image: caddy:2-alpine
+    container_name: profileapp-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app-network
+
+# ─── Persistent Volumes ─────────────────────────────────────────────
+volumes:
+  # caddy_data stores the generated Let's Encrypt SSL certificates permanently
+  caddy_data:
+  caddy_config:
+
+# ─── Isolated Internal Network ──────────────────────────────────────
+networks:
+  app-network:
+    driver: bridge

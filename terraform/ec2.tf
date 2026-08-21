@@ -24,10 +24,10 @@ data "aws_ami" "ubuntu" {
 # 2. Security Group for EC2 Backend Server
 resource "aws_security_group" "ec2_sg" {
   name        = "profileapp-ec2-sg"
-  description = "Security Group for ProfileApp EC2 Node.js Backend Server"
+  description = "Security Group for ProfileApp EC2 (Docker, Caddy & Web Traffic)"
   vpc_id      = aws_vpc.main.id
 
-  # HTTP (Web traffic / Nginx)
+  # HTTP (Web traffic / Caddy Let's Encrypt challenge)
   ingress {
     description = "HTTP Web Traffic"
     from_port   = 80
@@ -36,20 +36,11 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTPS
+  # HTTPS (Secure Web & API Traffic)
   ingress {
     description = "HTTPS Web Traffic"
     from_port   = 443
     to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Node.js Express API Port (5000)
-  ingress {
-    description = "Node.js Express API Port"
-    from_port   = 5000
-    to_port     = 5000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -63,7 +54,7 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Outbound Rule: Allow all outgoing traffic (e.g., npm install, AWS APIs)
+  # Outbound Rule: Allow all outgoing traffic (e.g., pulling Docker images, AWS APIs)
   egress {
     from_port   = 0
     to_port     = 0
@@ -139,14 +130,37 @@ resource "aws_instance" "backend_server" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
-  # Initial Boot Script (Installs Node.js 20, Git, PM2 process manager, & Nginx)
+  # Initial Boot Script: Configures 2GB Swap space & installs official Docker & Docker Compose
   user_data = <<-EOF
               #!/bin/bash
-              curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-              apt-get install -y nodejs git nginx
-              npm install -g pm2
-              systemctl enable nginx
-              systemctl start nginx
+              set -e
+
+              # 1. Create 2GB swap space to prevent memory issues during builds on t3.micro
+              fallocate -l 2G /swapfile
+              chmod 600 /swapfile
+              mkswap /swapfile
+              swapon /swapfile
+              echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+              # 2. Update packages and install prerequisites
+              apt-get update -y
+              apt-get install -y ca-certificates curl gnupg lsb-release git
+
+              # 3. Add official Docker GPG key and APT repository
+              install -m 0755 -d /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              chmod a+r /etc/apt/keyrings/docker.gpg
+
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+              # 4. Install Docker Engine, CLI, and Docker Compose Plugin
+              apt-get update -y
+              apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+              # 5. Start and enable Docker, add ubuntu user to docker group
+              systemctl enable docker
+              systemctl start docker
+              usermod -aG docker ubuntu
               EOF
 
   tags = {
